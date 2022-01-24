@@ -1,3 +1,7 @@
+## 0.4.1.1
+
+- Added nested (&) class support for scss styles.
+
 ## 0.4.1
 
 - Fix unable to resolve alias path on Windows. [#53](https://github.com/clinyong/vscode-css-modules/issues/53) for detail.
