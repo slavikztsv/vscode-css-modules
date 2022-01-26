@@ -53,34 +53,7 @@ export async function getAllClassNames(filePath: string, keyword: string): Promi
 //     return [];
 //   }
 
-  // scss '&' nesting support
-  const classNameRegex = /\.[_A-Za-z0-9-]+/g;
-  let parentClassName = '';
-  let prevParentClassName = '';
-  let newItem = '';
-  let classLevel = 0;
-  let prevClassLevel = 0;
-  let linesWithNesting = [];
-
-  linesWithNesting = lines.map(item => {
-    if(item.match(classNameRegex)) {
-        parentClassName = item.match(classNameRegex).toString().split(' ')[0];
-    } else {
-        classLevel = item.split('&')[0].length;
-
-        if(prevClassLevel !== classLevel) {
-            prevParentClassName = parentClassName;
-            parentClassName = newItem = item.replace('&', parentClassName).trim().split(' ')[0];
-            prevClassLevel = classLevel;
-        } else {
-            newItem = item.replace('&', prevParentClassName).trim().split(' ')[0];
-        }
-    }
-    return newItem;
-  });
-
-  const classNames = linesWithNesting.join(" ").match(/\.[_A-Za-z0-9-]+/g);
-
+  const classNames = lines.join(" ").match(/\.[_A-Za-z0-9-]+/g);
   if (classNames === null) {
     return [];
   }
