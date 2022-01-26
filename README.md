@@ -30,7 +30,7 @@ If you write `kebab-case` classes in css files, but want to get `camelCase` comp
 
 ```json
 {
-  "cssModules.camelCase": true
+  "cssModulesFork.camelCase": true
 }
 ```
 
@@ -40,7 +40,7 @@ Create aliases to import or require modules. (In combination with webpack resolv
 
 ```json
 {
-  "cssModules.pathAlias": {
+  "cssModulesFork.pathAlias": {
     "@styles1": "${workspaceFolder}/src/styles1",
     "styles2": "${workspaceFolder}/src/styles2"
   }
