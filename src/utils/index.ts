@@ -1,3 +1,5 @@
+import { NODE, ROOT_NODE } from 'css-simple-parser/dist/types';
+import * as Parser from 'css-simple-parser';
 import { Position, TextDocument, CompletionItem, CompletionItemKind, TextEdit, Range } from "vscode";
 import * as fse from "fs-extra";
 import * as _ from "lodash";
@@ -26,10 +28,30 @@ export async function getAllClassNames(filePath: string, keyword: string): Promi
   if (filePath.endsWith(".styl") ||filePath.endsWith(".stylus")) {
     matchLineRegexp = /\..*/g
   }
-  const lines = content.match(matchLineRegexp);
-  if (lines === null) {
-    return [];
-  }
+
+ // nested scss '&' selectors
+
+ const ast = Parser.parse ( content.replace(/\r?\n|\r|\s/g, "") );
+ let rootNode: ROOT_NODE;
+ Parser.traverse ( ast, node => {
+   if(!rootNode) {
+       rootNode = node as ROOT_NODE;
+   }
+ });
+
+
+ const rootNodeReplaced = setSelectorName(rootNode.children, (rootNode as NODE).selector);
+ const lines = getNestedSelectorNames(rootNodeReplaced);
+ lines.push((rootNode as NODE).selector);
+
+ if (lines === null) {
+     return [];
+ }
+
+//   const lines = content.match(matchLineRegexp);
+//   if (lines === null) {
+//     return [];
+//   }
 
   const classNames = lines.join(" ").match(/\.[_A-Za-z0-9-]+/g);
   if (classNames === null) {
@@ -40,6 +62,30 @@ export async function getAllClassNames(filePath: string, keyword: string): Promi
   return keyword !== ""
     ? uniqNames.filter((item) => item.indexOf(keyword) !== -1)
     : uniqNames;
+}
+
+function setSelectorName(childNodes: NODE[], parentSelectorName: string) {
+    if(childNodes.length === 0) {
+        return "";
+    }
+
+    return childNodes.map(item => {
+        const currentSelectorName = item.selector.replace('&', parentSelectorName)
+        return {...item, selector: currentSelectorName, children: setSelectorName(item.children, currentSelectorName), parent: {...item.parent, selector: parentSelectorName}};
+    });
+}
+
+function getNestedSelectorNames(childNodes: NODE[], selectors: string[]=[]) {
+    if(childNodes.length === 0) {
+        return [];
+    }
+
+    childNodes.map(item => {
+        selectors.push(item.selector);
+        getNestedSelectorNames(item.children, selectors);
+    });
+
+    return selectors;
 }
 
 // from css-loader's implementation
